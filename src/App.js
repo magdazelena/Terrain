@@ -3,17 +3,25 @@ import THREE from './3d/three';
 import SimplexNoise from 'simplex-noise';
 function App() {
   let cols, rows, scene, renderer, camera;
-  let scale = 10;
-  let width = 1000;
-  let height = 1000;
+  let scale = 20;
+  let width = 2000;
+  let height = 2000;
   let zArray = [];
   var simplex = new SimplexNoise();
-  let geometry, wireframe, wireframeModel;
+  let geometry;
   let setup = ()=>{
         const canvas = document.createElement('canvas');
         cols = width/scale;
         rows = height/scale;
-        
+        let ioff = f;
+        // for(let i = 0; i< cols; i++){
+        //   let joff = f;
+        //   for(let j = 0; j< rows; j++){
+        //     zArray.push(map_range(simplex.noise2D(ioff,joff), 0, 1, -5, 5));
+        //     joff+=.1;
+        //   }
+        //   ioff+=.1;
+        // }
         //scene
         scene = new THREE.Scene();
         //renderer
@@ -25,50 +33,61 @@ function App() {
         document.body.appendChild(renderer.domElement);
         //camera
         camera = new THREE.PerspectiveCamera(
-            500,
+            200,
             window.innerWidth / window.innerHeight,
             0.1,
             1000
           );
-          camera.position.z = 30 
-          camera.position.x = 0;
-          //camera.position.y = -window.innerHeight/2;
+          camera.position.z = 50; 
+          camera.position.x = 100;
+          camera.position.y = -30;
  
-             geometry = new THREE.PlaneGeometry(width, height, cols, rows)
-             f-=0.1;
-        let ioff = f;
-        for(let i = 0; i< cols; i++){
-          let joff = 0;
-          for(let j = 0; j< rows; j++){
-            zArray.push(map_range(simplex.noise2D(ioff,joff), 0, 1, -5, 5));
-            joff+=.1;
-          }
-          ioff+=.1;
-        }
-        for(let x = 0; x < geometry.vertices.length; x++){
+             geometry = new THREE.PlaneGeometry(width*3, height*3, cols, rows)
+      //        f-=0.1;
+      //   generateZs(f);
+        
+      //   for(let x = 0; x < geometry.vertices.length; x++){
             
-          geometry.vertices[x].z = isNaN(zArray[x])? 0: zArray[x];
-      }
-            var material = new THREE.MeshPhongMaterial( {
-              color: 0xff0000
+      //     geometry.vertices[x].z = isNaN(zArray[x])? 0: zArray[x];
+      // }
+            var material = new THREE.MeshBasicMaterial( {
+              color: 0xff0000,
+              wireframe: true
             } );
+            geometry.verticesNeedUpdate = true;
           var mesh = new THREE.Mesh( geometry, material );
-          mesh.rotateX(-Math.PI/16)
+          mesh.rotateX(Math.PI/16)
           scene.add( mesh )
-           wireframe = new THREE.WireframeGeometry( geometry );
+          //  wireframe = new THREE.WireframeGeometry( geometry );
       
-          var mat = new THREE.LineBasicMaterial( { color: 0xffff00, linewidth: 2 } );
-          wireframeModel = new THREE.LineSegments( wireframe, mat );
-           mesh.add( wireframeModel );
+          // var mat = new THREE.LineBasicMaterial( { color: 0xffff00, linewidth: 2 } );
+          // wireframeModel = new THREE.LineSegments( wireframe, mat );
+          //  mesh.add( wireframeModel );
 
       
   }
   let f = 0;
+
   let draw = () =>{
     requestAnimationFrame(draw);
-          renderer.render(scene, camera);
-       
-      geometry.verticesNeedUpdate = true;
+    f+=.03;
+    let ioff = f;
+    zArray = [];
+    for(let i = 0; i< cols; i++){
+      let joff = 0;
+      for(let j = 0; j< rows; j++){
+        zArray.push(map_range(simplex.noise2D(ioff,joff), 0, 1, -20, 20));
+        joff+=.1;
+      }
+      ioff+=.1;
+    }
+    for(let x = 0; x < geometry.vertices.length; x++){
+        geometry.vertices[x].z = zArray[x];
+    }
+    geometry.verticesNeedUpdate = true;
+    
+    renderer.render(scene, camera);
+
   }
   setup();
   draw();
